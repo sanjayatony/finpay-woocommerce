@@ -8,7 +8,7 @@ class WC_Gateway_Finpay extends WC_Payment_Gateway {
 		$this->id									= 'finpay';
 		$this->has_fields					= false;
 		$this->method_title				= __('Finpay', 'woocommerce');
-		$this->method_description = __('Finpay Checkout', 'finpay-for-woocommerce');
+		$this->method_description = __('Allows payments using Finpay.', 'woocommerce');
 
 		//load the settings
 		$this->init_form_fields();
@@ -24,13 +24,14 @@ class WC_Gateway_Finpay extends WC_Payment_Gateway {
 		$this->log					= new WC_Logger();
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+		add_action( 'admin_print_scripts-woocommerce_page_wc-settings', array( &$this, 'finpay_admin_scripts' ));
 	
 	}
 
 	/**
 	 * Add JS
 	 */
-	function veritrans_admin_scripts() {
+	function finpay_admin_scripts() {
 		wp_enqueue_script( 'admin-finpay', FP_PLUGIN_DIR . 'js/admin.js', array('jquery') );
 	}
 
@@ -52,7 +53,6 @@ class WC_Gateway_Finpay extends WC_Payment_Gateway {
 				'type' => 'text',
 				'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce' ),
 				'default' => __( 'Credit Card (VISA / MasterCard)', 'woocommerce' ),
-				'desc_tip'      => true,
 			),
 			'description' => array(
 				'title' => __( 'Customer Message', 'woocommerce' ),
@@ -75,28 +75,28 @@ class WC_Gateway_Finpay extends WC_Payment_Gateway {
 				'type'		=> 'text',
 				'description'	=> __('Enter your <b>Sandbox</b> Finpay Store ID.', 'woocommerce'),
 				'default'	=> '',
-				'class' => 'sandbox_settings'
+				'class' => 'sandbox_settings sensitive'
 			),
 			'auth_key_sandbox' => array(
 				'title'		=> __('Authentication Key', 'woocommerce'),
 				'type'		=> 'text',
 				'description'	=> __('Enter your <b>Sandbox</b> Finpay Authentification key', 'woocommerce'),
 				'default'	=> '',
-				'class'	=> 'sandbox_settings'
+				'class'	=> 'sandbox_settings sensitive'
 			),
 			'store_id_production' => array(
 				'title'		=> __('Store ID', 'woocommerce'),
 				'type'		=> 'text',
 				'description'	=> __('Enter your <b>Production</b> Finpay Store ID.', 'woocommerce'),
 				'default'	=> '',
-				'class' => 'sandbox_settings'
+				'class' => 'production_settings sensitive'
 			),
 			'auth_key_production' => array(
 				'title'		=> __('Authentication Key', 'woocommerce'),
 				'type'		=> 'text',
 				'description'	=> __('Enter your <b>Production</b> Finpay Authentification key', 'woocommerce'),
 				'default'	=> '',
-				'class'	=> 'sandbox_settings'
+				'class'	=> 'production_settings sensitive'
 			)
 
 		);
