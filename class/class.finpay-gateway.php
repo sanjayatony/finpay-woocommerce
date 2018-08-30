@@ -28,6 +28,13 @@ class WC_Gateway_Finpay extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * Add JS
+	 */
+	function veritrans_admin_scripts() {
+		wp_enqueue_script( 'admin-finpay', FP_PLUGIN_DIR . 'js/admin.js', array('jquery') );
+	}
+
+	/**
 	 * Setting admin page
 	 */
 	function init_form_fields() {
