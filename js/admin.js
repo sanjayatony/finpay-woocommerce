@@ -8,7 +8,7 @@
   }
 
   $(document).ready(function () {
-    $("select[name*='woocomemrce_finpay_environment']").on('change', function (e, data) {
+    $("select[name*='woocommerce_finpay_environment']").on('change', function (e, data) {
       sensitiveOptions();
     });
     sensitiveOptions();
