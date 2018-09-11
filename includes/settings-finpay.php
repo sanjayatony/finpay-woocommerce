@@ -40,8 +40,8 @@ return array(
     'default'	=> '',
     'class' => 'sandbox_settings sensitive'
   ),
-  'auth_key_sandbox' => array(
-    'title'		=> __('Authentication Key', 'woocommerce'),
+  'merchant_key_sandbox' => array(
+    'title'		=> __('Merchant Key', 'woocommerce'),
     'type'		=> 'text',
     'description'	=> __('Enter your <b>Sandbox</b> Finpay Authentification key', 'woocommerce'),
     'default'	=> '',
@@ -54,8 +54,8 @@ return array(
     'default'	=> '',
     'class' => 'production_settings sensitive'
   ),
-  'auth_key_production' => array(
-    'title'		=> __('Authentication Key', 'woocommerce'),
+  'merchant_key_production' => array(
+    'title'		=> __('Merchant Key', 'woocommerce'),
     'type'		=> 'text',
     'description'	=> __('Enter your <b>Production</b> Finpay Authentification key', 'woocommerce'),
     'default'	=> '',
