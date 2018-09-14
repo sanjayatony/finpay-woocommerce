@@ -47,10 +47,10 @@ function finpay_gateway_init() {
       add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
       add_action( 'admin_print_scripts-woocommerce_page_wc-settings', array( &$this, 'finpay_admin_scripts' ));
       add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) ); //custom thankyou page
-      add_action( 'woocommerce_api_finpay', array( $this, 'webhook' ) ); //webhook after payment success
+      //add_action( 'woocommerce_api_finpay', array( $this, 'webhook' ) ); //webhook after payment success
 
     }
-    
+
 
     /**
      * Process the payment and return the result
@@ -89,7 +89,49 @@ function finpay_gateway_init() {
      * Prosessing the request
      */
     function generate_request ($order_id) {
-      include 'includes/finpay-request.php';
+      global $woocommerce;
+      $order = new WC_Order( $order_id );
+
+      $add_info1    = $order->billing_last_name;
+      $amount       = round($order->get_total(), 0);
+      $cust_email   = $order->billing_email;
+      $cust_id      = $order->get_user_id();
+      $cust_msisdn  = $order->billing_phone;
+      $cust_name    = $order->billing_first_name;
+      $invoice      = $order->get_id();
+      $merchant_id  = $this->merchant_id;
+      $return_url   = get_site_url().'/wc-api/finpay';
+      $sof_id       = 'finpay021';
+      $sof_type     = 'pay';
+      $trans_date   = strtotime($order->order_date);
+
+      //mer_signature
+      $mer_signature = $add_info1.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$invoice.'%'.$merchant_id.'%'.$return_url.'%'.$sof_id.'%'.$sof_type.'%'.$trans_date;
+      $mer_signature = strtoupper($mer_signature).'%'.$this->merchant_key;
+      $mer_signature = hash('sha256', $mer_signature);
+
+      //data
+      $finpay_args = array (
+        'add_info1'     => $add_info1,
+        'amount'        => $amount,
+        'cust_email'    => $cust_email,
+        'cust_id'       => $cust_id,
+        'cust_msisdn'   => $cust_msisdn,
+        'cust_name'     => $cust_name,
+        'invoice'       => $invoice,
+        'mer_signature' => $mer_signature,
+        'merchant_id'   => $merchant_id,
+        'return_url'    => $return_url,
+        'sof_id'        => $sof_id,
+        'sof_type'      => $sof_type,
+        'trans_date'    => $trans_date
+      );
+      $logger = wc_get_logger();
+      $logger->log( 'DATA send', wc_print_r($finpay_args, true) );
+
+      $response = wp_remote_retrieve_body(wp_remote_post( $this->api_endpoint, array('body' => $finpay_args )));
+      $logger->log( 'Response', $response );
+      return json_decode($response);
     }
 
     /**
@@ -99,18 +141,12 @@ function finpay_gateway_init() {
     public function thankyou_page ($order_id) {
       global $wpdb;
       $payment_code = $wpdb->get_row( 'SELECT * FROM '. $wpdb->prefix. 'posts WHERE ID = '.$order_id );
+      echo '<div style="text-align:center">';
       echo wpautop( wptexturize( $this->instructions ) );
-      echo '<p><strong>'.$payment_code->post_excerpt.'</strong></p>';
+      echo '<h4>'.$payment_code->post_excerpt.'</h4>';
+      echo '</div>';
     }
 
-    /**
-     * webhook, to update order status if payment success
-     */
-    public function webhook() { 
-      $order = wc_get_order( $_GET['id'] );
-      $order->payment_complete(); // set order status to paid
-      $order->reduce_order_stock(); // reduce stock
-    }
 
     /**
      * Add JS to admin page
