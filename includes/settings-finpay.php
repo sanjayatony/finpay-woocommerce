@@ -23,6 +23,13 @@ return array(
     'default' => '',
     'desc_tip'    => true
   ),
+  'instructions' => array(
+    'title' => __( 'Instructions', 'woocommerce' ),
+    'type' => 'textarea',
+    'description' => __( 'This controls the instruction which the user sees in thankyou page', 'woocommerce' ),
+    'default' => __('Please pay with Finpay Code below'),
+    'desc_tip'    => true
+  ),
   'environment' => array(
     'title' => __( 'Environment', 'woocommerce' ),
     'type' => 'select',
