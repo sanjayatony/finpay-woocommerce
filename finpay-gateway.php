@@ -47,7 +47,7 @@ function finpay_gateway_init() {
       add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
       add_action( 'admin_print_scripts-woocommerce_page_wc-settings', array( &$this, 'finpay_admin_scripts' ));
       add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) ); //custom thankyou page
-      add_action( 'woocommerce_api_finpay', array( $this, 'webhook' ) ); //webhook after payment success
+      add_action( 'woocommerce_api_'. strtolower( get_class($this) ), array( $this, 'callback_handler' ) );
 
     }
 
@@ -100,13 +100,14 @@ function finpay_gateway_init() {
       $cust_name    = $order->billing_first_name;
       $invoice      = $order->get_id();
       $merchant_id  = $this->merchant_id;
-      $return_url   = get_site_url().'/wc-api/finpay';
+      $return_url   = get_site_url().'/wc-api/'.strtolower( get_class($this)).'/?id='.$invoice;
       $sof_id       = 'finpay021';
       $sof_type     = 'pay';
+      $timeout      = 100000;
       $trans_date   = strtotime($order->order_date);
 
       //mer_signature
-      $mer_signature = $add_info1.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$invoice.'%'.$merchant_id.'%'.$return_url.'%'.$sof_id.'%'.$sof_type.'%'.$trans_date;
+      $mer_signature = $add_info1.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$invoice.'%'.$merchant_id.'%'.$return_url.'%'.$sof_id.'%'.$sof_type.'%'.$timeout.'%'.$trans_date;
       $mer_signature = strtoupper($mer_signature).'%'.$this->merchant_key;
       $mer_signature = hash('sha256', $mer_signature);
 
@@ -124,7 +125,7 @@ function finpay_gateway_init() {
         'return_url'    => $return_url,
         'sof_id'        => $sof_id,
         'sof_type'      => $sof_type,
-        'timeout'       => 100000,
+        'timeout'       => $timeout,
         'trans_date'    => $trans_date
       );
       $logger = wc_get_logger();
@@ -159,10 +160,13 @@ function finpay_gateway_init() {
       }
     }
 
-    public function webhook() {
-      $order = wc_get_order( $_GET['id'] );
+    public function callback_handler() {
+      global $woocommerce;
+      $order = new WC_ORDER( $_GET['id'] );
+      $order->add_order_note( __('Your payment have been received', 'woocommerce') );
       $order->payment_complete();
       $order->reduce_order_stock();
+      update_option('webhook_debug', $_GET);
     }
 
 
