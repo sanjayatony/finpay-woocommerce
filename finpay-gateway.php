@@ -47,7 +47,7 @@ function finpay_gateway_init() {
       add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
       add_action( 'admin_print_scripts-woocommerce_page_wc-settings', array( &$this, 'finpay_admin_scripts' ));
       add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) ); //custom thankyou page
-      //add_action( 'woocommerce_api_finpay', array( $this, 'webhook' ) ); //webhook after payment success
+      add_action( 'woocommerce_api_finpay', array( $this, 'webhook' ) ); //webhook after payment success
 
     }
 
@@ -124,6 +124,7 @@ function finpay_gateway_init() {
         'return_url'    => $return_url,
         'sof_id'        => $sof_id,
         'sof_type'      => $sof_type,
+        'timeout'       => 100000,
         'trans_date'    => $trans_date
       );
       $logger = wc_get_logger();
@@ -145,6 +146,23 @@ function finpay_gateway_init() {
       echo wpautop( wptexturize( $this->instructions ) );
       echo '<h4>'.$payment_code->post_excerpt.'</h4>';
       echo '</div>';
+    }
+    /**
+    * add instrctions and payment code in email
+    */
+    function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
+      if ( $this->instructions && ! $sent_to_admin && 'finpay' === $order->payment_method && $order->has_status( 'on-hold' ) ) {
+        echo '<div style="text-align:center">';
+        echo wpautop( wptexturize( $this->instructions ) );
+        echo '<h4>'.$payment_code->post_excerpt.'</h4>';
+        echo '</div>';
+      }
+    }
+
+    public function webhook() {
+      $order = wc_get_order( $_GET['id'] );
+      $order->payment_complete();
+      $order->reduce_order_stock();
     }
 
 
