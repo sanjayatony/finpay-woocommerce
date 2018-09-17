@@ -94,11 +94,7 @@ class WC_Gateway_Finpay_Briva extends WC_Payment_Gateway {
     $invoice      = $order->get_id();
     $merchant_id  = $this->merchant_id;
     $return_url   = get_site_url().'/wc-api/'.strtolower( get_class($this)).'/?id='.$invoice;
-<<<<<<< HEAD
     $sof_id       = $this->id;
-=======
-    $sof_id       = $this->sof_id;
->>>>>>> seperate the classes
     $sof_type     = 'pay';
     $timeout      = $this->timeout;
     $trans_date   = strtotime($order->order_date);
@@ -149,11 +145,7 @@ class WC_Gateway_Finpay_Briva extends WC_Payment_Gateway {
   * add instrctions and payment code in email
   */
   function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
-<<<<<<< HEAD
     if ( $this->instructions && ! $sent_to_admin && $this->id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
-=======
-    if ( $this->instructions && ! $sent_to_admin && $this->sof_id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
->>>>>>> seperate the classes
       echo '<div style="text-align:center">';
       echo wpautop( wptexturize( $this->instructions ) );
       echo '<h4>'.$payment_code->post_excerpt.'</h4>';
