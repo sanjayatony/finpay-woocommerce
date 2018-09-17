@@ -35,13 +35,6 @@ $this->form_fields = array(
     'default' => __('Please pay with Finpay Code below'),
     'desc_tip'    => true
   ),
-  'Timeout' => array(
-    'title' => __( 'Code Timeout (minutes)', 'woocommerce' ),
-    'type' => 'text',
-    'description' => __( 'This controls the the payment code timeout ', 'woocommerce' ),
-    'default' => __('100000'),
-    'desc_tip'    => true
-  ),
   'environment' => array(
     'title' => __( 'Environment', 'woocommerce' ),
     'type' => 'select',
