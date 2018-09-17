@@ -13,7 +13,7 @@ return array(
     'title' => __( 'Title', 'woocommerce' ),
     'type' => 'text',
     'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce' ),
-    'default' => __( 'Finpay', 'woocommerce' ),
+    'default' => __( $title, 'woocommerce' ),
     'desc_tip'    => true
   ),
   'description' => array(
@@ -28,6 +28,13 @@ return array(
     'type' => 'textarea',
     'description' => __( 'This controls the instruction which the user sees in thankyou page', 'woocommerce' ),
     'default' => __('Please pay with Finpay Code below'),
+    'desc_tip'    => true
+  ),
+  'Timeout' => array(
+    'title' => __( 'Code Timeout (minutes)', 'woocommerce' ),
+    'type' => 'text',
+    'description' => __( 'This controls the the payment code timeout ', 'woocommerce' ),
+    'default' => __('100000'),
     'desc_tip'    => true
   ),
   'environment' => array(
@@ -67,19 +74,5 @@ return array(
     'description'	=> __('Enter your <b>Production</b> Finpay Authentification key', 'woocommerce'),
     'default'	=> '',
     'class'	=> 'production_settings sensitive'
-  ),
-  'cc' => array(
-    'title' => __( 'Enable credit card', 'woocommerce' ),
-    'type' => 'checkbox',
-    'label' => __( 'Enable Credit card?', 'woocommerce' ),
-    'description' => __( 'Please contact us if you wish to enable this feature in the Production environment.', 'woocommerce' ),
-    'default' => 'no'
-  ),
-  'finpay021' => array(
-    'title' => __( 'Enable Felisa 021 Closed', 'woocommerce' ),
-    'type' => 'checkbox',
-    'label' => __( 'Enable Felisa 021 Closed', 'woocommerce' ),
-    'description' => __( 'Please contact us if you wish to enable this feature in the Production environment.', 'woocommerce' ),
-    'default' => 'no'
-  ),
+  )
 );
