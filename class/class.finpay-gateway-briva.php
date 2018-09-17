@@ -15,7 +15,7 @@ class WC_Gateway_Finpay_Briva extends WC_Payment_Gateway {
     $this->id									= $this->sof_id;
     $this->has_fields					= false;
     $this->method_title				= __($this->sof_desc, 'woocommerce');
-    $this->method_description = __('Allows payments using '. $sof_desc, 'woocommerce');
+    $this->method_description = __('Allows payments using '.$this->sof_desc, 'woocommerce');
 
     //load the settings
     $this->init_form_fields();
@@ -94,7 +94,7 @@ class WC_Gateway_Finpay_Briva extends WC_Payment_Gateway {
     $invoice      = $order->get_id();
     $merchant_id  = $this->merchant_id;
     $return_url   = get_site_url().'/wc-api/'.strtolower( get_class($this)).'/?id='.$invoice;
-    $sof_id       = $this->sof_id;
+    $sof_id       = $this->id;
     $sof_type     = 'pay';
     $timeout      = $this->timeout;
     $trans_date   = strtotime($order->order_date);
@@ -145,7 +145,7 @@ class WC_Gateway_Finpay_Briva extends WC_Payment_Gateway {
   * add instrctions and payment code in email
   */
   function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
-    if ( $this->instructions && ! $sent_to_admin && $this->sof_id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
+    if ( $this->instructions && ! $sent_to_admin && $this->id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
       echo '<div style="text-align:center">';
       echo wpautop( wptexturize( $this->instructions ) );
       echo '<h4>'.$payment_code->post_excerpt.'</h4>';
@@ -167,19 +167,91 @@ class WC_Gateway_Finpay_Briva extends WC_Payment_Gateway {
    * Add JS to admin page
    */
   public function finpay_admin_scripts () {
-    wp_enqueue_script( 'admin-finpay',  plugin_dir_url( __FILE__ ). 'js/admin.js', array('jquery') );
+    wp_enqueue_script( 'admin-finpay',  plugin_dir_url( __FILE__ ). '../js/admin.js', array('jquery') );
   }
 
   /**
    * Settings in Admin page
    */
   public function init_form_fields () {
-    $this->form_fields = include 'includes/settings-finpay.php';
+    $this->form_fields = array(
+		  	'enabled' => array(
+		    'title' => __('Enabled/Disable', 'woocommerce'),
+		    'type' => 'checkbox',
+		    'label' => __('Enable '.$this->sof_desc, 'woocommerce'),
+		    'default' => 'no'
+		  ),
+		  'title' => array(
+		    'title' => __( 'Title', 'woocommerce' ),
+		    'type' => 'text',
+		    'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce' ),
+		    'default' => __( $this->sof_desc, 'woocommerce' ),
+		    'desc_tip'    => true
+		  ),
+		  'description' => array(
+		    'title' => __( 'Description', 'woocommerce' ),
+		    'type' => 'textarea',
+		    'description' => __( 'This controls the description which the user sees during checkout', 'woocommerce' ),
+		    'default' => '',
+		    'desc_tip'    => true
+		  ),
+		  'instructions' => array(
+		    'title' => __( 'Instructions', 'woocommerce' ),
+		    'type' => 'textarea',
+		    'description' => __( 'This controls the instruction which the user sees in thankyou page', 'woocommerce' ),
+		    'default' => __('Please pay with Finpay Code below'),
+		    'desc_tip'    => true
+		  ),
+		  'timeout' => array(
+		    'title' => __( 'Code Timeout (minutes)', 'woocommerce' ),
+		    'type' => 'text',
+		    'description' => __( 'This controls the the payment code timeout ', 'woocommerce' ),
+		    'default' => __(100000),
+		    'desc_tip'    => true
+		  ),
+		  'environment' => array(
+		    'title' => __( 'Environment', 'woocommerce' ),
+		    'type' => 'select',
+		    'default' => 'sandbox',
+		    'description' => __( 'Select the Environment', 'woocommerce' ),
+		    'options'   => array(
+		      'sandbox'    => __( 'Sandbox', 'woocommerce' ),
+		      'production'   => __( 'Production', 'woocommerce' ),
+		    ),
+		    'class'	=> 'finpay_environment'
+		  ),
+		  'merchant_id_sandbox' => array(
+		    'title'		=> __('Merchant ID', 'woocommerce'),
+		    'type'		=> 'text',
+		    'description'	=> __('Enter your <b>Sandbox</b> Finpay Merchant ID.', 'woocommerce'),
+		    'default'	=> '',
+		    'class' => 'sandbox_settings sensitive'
+		  ),
+		  'merchant_key_sandbox' => array(
+		    'title'		=> __('Merchant Key', 'woocommerce'),
+		    'type'		=> 'text',
+		    'description'	=> __('Enter your <b>Sandbox</b> Finpay Authentification key', 'woocommerce'),
+		    'default'	=> '',
+		    'class'	=> 'sandbox_settings sensitive'
+		  ),
+		  'merchant_id_production' => array(
+		    'title'		=> __('Merchant ID', 'woocommerce'),
+		    'type'		=> 'text',
+		    'description'	=> __('Enter your <b>Production</b> Finpay Merchant ID.', 'woocommerce'),
+		    'default'	=> '',
+		    'class' => 'production_settings sensitive'
+		  ),
+		  'merchant_key_production' => array(
+		    'title'		=> __('Merchant Key', 'woocommerce'),
+		    'type'		=> 'text',
+		    'description'	=> __('Enter your <b>Production</b> Finpay Authentification key', 'woocommerce'),
+		    'default'	=> '',
+		    'class'	=> 'production_settings sensitive'
+		  )
+		);
   }
-
-
-
 }
+
 
 
 
