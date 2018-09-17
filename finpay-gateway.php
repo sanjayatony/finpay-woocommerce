@@ -11,7 +11,7 @@ this plugin written based on https://docs.woocommerce.com/document/payment-gatew
 
 add_action( 'plugins_loaded', 'finpay_gateway_init');
 function finpay_gateway_init() {
-  include 'includes/class.finpay-gateway-briva.php';
+  include 'class/class.finpay-gateway-briva.php';
 }
 
 /**
