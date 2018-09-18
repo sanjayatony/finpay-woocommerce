@@ -48,18 +48,3 @@ function add_finpay_payment_gateway( $methods ) {
   return $methods;
 }
 add_filter( 'woocommerce_payment_gateways', 'add_finpay_payment_gateway' );
-
-/**
-* Add content to the WC emails.
-*
-* @access public
-* @param WC_Order $order
-* @param bool $sent_to_admin
-* @param bool $plain_text
-*/
-// function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
-//   if ( $this->instructions && ! $sent_to_admin && 'finpay' === $order->payment_method && $order->has_status( 'on-hold' ) ) {
-//       echo wpautop( wptexturize( $this->instructions ) ) . PHP_EOL;
-//   }
-// }
-
