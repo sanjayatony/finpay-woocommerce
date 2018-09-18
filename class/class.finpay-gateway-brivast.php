@@ -1,15 +1,15 @@
 <?php
 /**
-* finpayst021 / Felisa 021 Open
+* brivast / Felisa BRI Open
 */
 
-class WC_Gateway_Finpay_Finpayst021 extends WC_Payment_Gateway {
+class WC_Gateway_Finpay_Brivast extends WC_Payment_Gateway {
 
   /**
   * constructor
   */
-  private $sof_id  	= 'finpayst021';
-  private $sof_desc = 'Felisa 021 Open';
+  private $sof_id  	= 'brivast';
+  private $sof_desc = 'Felisa BRI Open';
 
   public function __construct () {
     $this->id									= $this->sof_id;
@@ -251,3 +251,7 @@ class WC_Gateway_Finpay_Finpayst021 extends WC_Payment_Gateway {
 		);
   }
 }
+
+
+
+
