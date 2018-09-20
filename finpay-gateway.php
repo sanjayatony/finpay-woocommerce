@@ -13,6 +13,7 @@ add_action( 'plugins_loaded', 'finpay_gateway_init');
 function finpay_gateway_init() {
   // #1 Payment Page
   include 'class/class.finpay-gateway-cc.php';
+  include 'class/class.finpay-gateway-tcash.php';
 
 
   // #3 Pending Payment
@@ -36,6 +37,7 @@ function finpay_gateway_init() {
 function add_finpay_payment_gateway( $methods ) {
 
   $methods[] = 'WC_Gateway_Finpay_Cc';
+  $methods[] = 'WC_Gateway_Finpay_Tcash';
 
   $methods[] = 'WC_Gateway_Finpay_Briva';
   $methods[] = 'WC_Gateway_Finpay_Finpay021';
