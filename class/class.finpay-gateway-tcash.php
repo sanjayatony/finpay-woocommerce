@@ -1,15 +1,15 @@
 <?php
 /**
-* finpayst021 / Felisa 021 Open
+* tcash / TCASH
 */
 
-class WC_Gateway_Finpay_Finpayst021 extends WC_Payment_Gateway {
+class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
 
   /**
   * constructor
   */
-  private $sof_id  	= 'finpayst021';
-  private $sof_desc = 'Felisa 021 Open';
+  private $sof_id  	= 'tcash';
+  private $sof_desc = 'TCASH';
 
   public function __construct () {
     $this->id									= $this->sof_id;
@@ -61,15 +61,9 @@ class WC_Gateway_Finpay_Finpayst021 extends WC_Payment_Gateway {
       //update  order status to on-hold
       $order->update_status('on-hold', __('Awaiting payment via '. $this->sof_desc, 'woocommerce'));
 
-      //update order note with payment code
-      $order->add_order_note( __('Your '.$this->sof_desc.' payment code is <b>'.$response->payment_code.'</b>', 'woocommerce') );
-
-      //use post excerpt to save payment code. GENIUS!!
-      $rs = $wpdb->update($wpdb->prefix. 'posts', array ('post_excerpt' => $response->payment_code), array ('ID' => $order_id) );
-
       return array(
         'result'  => 'success',
-        'redirect' => $this->get_return_url( $order )
+        'redirect'  => $response->redirect_url // to payment page
       );
 
     }else{
@@ -85,24 +79,50 @@ class WC_Gateway_Finpay_Finpayst021 extends WC_Payment_Gateway {
     global $woocommerce;
     $order = new WC_Order( $order_id );
 
+    $items_arr = array();
+    if( sizeof( $order->get_items() ) > 0 ) {
+      foreach( $order->get_items() as $item ) {
+        if ( $item['qty'] ) {
+          $product = $order->get_product_from_item( $item );
+
+          $fn_item = array();
+
+          $fn_item['name']      = $item['name'];
+          $fn_item['price']     = $order->get_item_subtotal( $item, false );
+          $fn_item['qty']       = $item['qty'];
+
+          $items_arr[] = array_values($fn_item);
+        }
+      }
+    }
+    $logger = wc_get_logger();
+    $logger->log( 'items', wc_print_r($items, true));
+    $items = json_encode($items_arr);
+
     $add_info1    = $order->billing_last_name;
     $amount       = round($order->get_total(), 0);
     $cust_email   = $order->billing_email;
     $cust_id      = $order->get_user_id();
     $cust_msisdn  = $order->billing_phone;
     $cust_name    = $order->billing_first_name;
+    $failed_url   = $order->get_checkout_payment_url(false);
     $invoice      = $order->get_id();
+    $items        = $items;
     $merchant_id  = $this->merchant_id;
-    $return_url   = get_site_url().'/wc-api/'.strtolower( get_class($this)).'/?id='.$invoice;
+    $return_url   = get_site_url().'/wc-api/'.strtolower( get_class($this)).'/?id='.$invoice;  //callback
     $sof_id       = $this->id;
     $sof_type     = 'pay';
+    $success_url   = $this->get_return_url( $order ); //after payment done
     $timeout      = $this->timeout;
     $trans_date   = strtotime($order->order_date);
 
     //mer_signature
-    $mer_signature = $add_info1.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$invoice.'%'.$merchant_id.'%'.$return_url.'%'.$sof_id.'%'.$sof_type.'%'.$timeout.'%'.$trans_date;
+    $mer_signature =  $add_info1.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$failed_url.'%'.$invoice.'%'.$items.'%'.$merchant_id.'%'.$return_url.'%'.$sof_id.'%'.$sof_type.'%'.$success_url.'%'.$timeout.'%'.$trans_date;
+    $logger = wc_get_logger();
     $mer_signature = strtoupper($mer_signature).'%'.$this->merchant_key;
+    $logger->log( 'MER1', $mer_signature );
     $mer_signature = hash('sha256', $mer_signature);
+    $logger->log( 'MER2', $mer_signature );
 
     //data
     $finpay_args = array (
@@ -112,16 +132,19 @@ class WC_Gateway_Finpay_Finpayst021 extends WC_Payment_Gateway {
       'cust_id'       => $cust_id,
       'cust_msisdn'   => $cust_msisdn,
       'cust_name'     => $cust_name,
+      'failed_url'    => $failed_url,
       'invoice'       => $invoice,
+      'items'          => $items,
       'mer_signature' => $mer_signature,
       'merchant_id'   => $merchant_id,
       'return_url'    => $return_url,
       'sof_id'        => $sof_id,
       'sof_type'      => $sof_type,
+      'success_url'   => $success_url,
       'timeout'       => $timeout,
       'trans_date'    => $trans_date
     );
-    $logger = wc_get_logger();
+
     $logger->log( 'DATA send', wc_print_r($finpay_args, true) );
 
     $response = wp_remote_retrieve_body(wp_remote_post( $this->api_endpoint, array('body' => $finpay_args )));
@@ -134,32 +157,34 @@ class WC_Gateway_Finpay_Finpayst021 extends WC_Payment_Gateway {
    */
 
   public function thankyou_page ($order_id) {
-    global $wpdb;
-    $payment_code = $wpdb->get_row( 'SELECT * FROM '. $wpdb->prefix. 'posts WHERE ID = '.$order_id );
-    echo '<div style="text-align:center">';
     echo wpautop( wptexturize( $this->instructions ) );
-    echo '<h4>'.$payment_code->post_excerpt.'</h4>';
-    echo '</div>';
   }
   /**
   * add instrctions and payment code in email
   */
   function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
     if ( $this->instructions && ! $sent_to_admin && $this->id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
-      echo '<div style="text-align:center">';
       echo wpautop( wptexturize( $this->instructions ) );
-      echo '<h4>'.$payment_code->post_excerpt.'</h4>';
-      echo '</div>';
     }
   }
 
   public function callback_handler() {
+    $logger = wc_get_logger();
+    $logger->log( 'finrc', wc_print_r($_POST, true));
     global $woocommerce;
     $order = new WC_ORDER( $_GET['id'] );
-    $order->add_order_note( __('Your payment have been received', 'woocommerce') );
-    $order->payment_complete();
-    $order->reduce_order_stock();
-    update_option('webhook_debug', $_GET);
+    if($_POST['result_code'] == '00'){
+      $order->add_order_note( __('Your payment have been received', 'woocommerce') );
+      $order->payment_complete();
+      $order->reduce_order_stock();
+    }else{
+      $order->add_order_note( __('Your payment failed, please contact Finpay.', 'woocommerce') );
+      $order->update_status('failed', __('Your payment failed, please try again.', 'woocommerce'));
+    }
+
+
+
+
   }
 
 
