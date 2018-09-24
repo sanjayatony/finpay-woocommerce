@@ -85,10 +85,10 @@ class WC_Gateway_Finpay_Cc extends WC_Payment_Gateway {
     $cust_id      = $order->get_user_id();
     $cust_msisdn  = $order->billing_phone;
     $cust_name    = $order->billing_first_name;
-    $failed_url   = $this->get_return_url( $order );
+    $failed_url   = $order->get_checkout_payment_url(false);
     $invoice      = $order->get_id();
-    $merchant_id  = $this->merchant_id;    
-    $return_url   = get_site_url().'/wc-api/'.strtolower( get_class($this)).'/?id='.$invoice;  //callback  
+    $merchant_id  = $this->merchant_id;
+    $return_url   = get_site_url().'/wc-api/'.strtolower( get_class($this)).'/?id='.$invoice;  //callback
     $sof_id       = $this->id;
     $sof_type     = 'pay';
     $success_url   = $this->get_return_url( $order ); //after payment done
@@ -114,8 +114,8 @@ class WC_Gateway_Finpay_Cc extends WC_Payment_Gateway {
       'failed_url'    => $failed_url,
       'invoice'       => $invoice,
       'mer_signature' => $mer_signature,
-      'merchant_id'   => $merchant_id,      
-      'return_url'    => $return_url,      
+      'merchant_id'   => $merchant_id,
+      'return_url'    => $return_url,
       'sof_id'        => $sof_id,
       'sof_type'      => $sof_type,
       'success_url'   => $success_url,
@@ -135,7 +135,7 @@ class WC_Gateway_Finpay_Cc extends WC_Payment_Gateway {
    */
 
   public function thankyou_page ($order_id) {
-    echo wpautop( wptexturize( $this->instructions ) );  
+    echo wpautop( wptexturize( $this->instructions ) );
   }
   /**
   * add instrctions and payment code in email
@@ -149,10 +149,14 @@ class WC_Gateway_Finpay_Cc extends WC_Payment_Gateway {
   public function callback_handler() {
     global $woocommerce;
     $order = new WC_ORDER( $_GET['id'] );
-    $order->add_order_note( __('Your payment have been received', 'woocommerce') );
-    $order->payment_complete();
-    $order->reduce_order_stock();
-    update_option('webhook_debug', $_GET);
+    if($_POST['result_code'] == '00'){
+      $order->add_order_note( __('Your payment have been received', 'woocommerce') );
+      $order->payment_complete();
+      $order->reduce_order_stock();
+    }else{
+      $order->add_order_note( __('Your payment failed, please contact Finpay.', 'woocommerce') );
+      $order->update_status('failed', __('Your payment failed, please try again.', 'woocommerce'));
+    }
   }
 
 
