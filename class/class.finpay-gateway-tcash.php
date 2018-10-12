@@ -34,7 +34,7 @@ class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
     }else{
       $this->merchant_id = $this->get_option('merchant_id_production');
       $this->merchant_key	= $this->get_option('merchant_key_production');
-      $this->api_endpoint = 'https://sandbox.finpay.co.id/servicescode/api/apiFinpay.php';
+      $this->api_endpoint = 'https://billhosting.finnet-indonesia.com/prepaidsystem/api/apiFinpay.php';
     }
 
     add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -118,10 +118,11 @@ class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
 
     //mer_signature
     $mer_signature =  $add_info1.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$failed_url.'%'.$invoice.'%'.$items.'%'.$merchant_id.'%'.$return_url.'%'.$sof_id.'%'.$sof_type.'%'.$success_url.'%'.$timeout.'%'.$trans_date;
+
     $logger = wc_get_logger();
     $mer_signature = strtoupper($mer_signature).'%'.$this->merchant_key;
     $logger->log( 'MER1', $mer_signature );
-    $mer_signature = hash('sha256', $mer_signature);
+    $mer_signature = strtoupper(hash('sha256', $mer_signature));
     $logger->log( 'MER2', $mer_signature );
 
     //data
