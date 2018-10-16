@@ -9,7 +9,7 @@ class WC_Gateway_Finpay_Vabni extends WC_Payment_Gateway {
   * constructor
   */
   private $sof_id  	= 'vabni';
-  private $sof_desc = 'Felisa BNI Closed';
+  private $sof_desc = 'BNI Virtual Account';
 
   public function __construct () {
     $this->id									= $this->sof_id;

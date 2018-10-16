@@ -9,7 +9,7 @@ class WC_Gateway_Finpay_Finpay021 extends WC_Payment_Gateway {
   * constructor
   */
   private $sof_id  	= 'finpay021';
-  private $sof_desc = 'Felisa 021 Closed';
+  private $sof_desc = 'Finpay Code 021';
 
   public function __construct () {
     $this->id									= $this->sof_id;

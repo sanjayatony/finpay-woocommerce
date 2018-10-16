@@ -9,7 +9,7 @@ class WC_Gateway_Finpay_Vastmandiri extends WC_Payment_Gateway {
   * constructor
   */
   private $sof_id  	= 'vastmandiri';
-  private $sof_desc = 'Felisa Mandiri Open';
+  private $sof_desc = 'Mandiri Virtual Account - Open Payment';
 
   public function __construct () {
     $this->id									= $this->sof_id;

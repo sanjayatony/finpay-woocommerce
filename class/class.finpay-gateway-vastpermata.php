@@ -9,7 +9,7 @@ class WC_Gateway_Finpay_Vastpermata extends WC_Payment_Gateway {
   * constructor
   */
   private $sof_id  	= 'vastpermata';
-  private $sof_desc = 'Felisa Permata Open';
+  private $sof_desc = 'Permata Virtual Account - Open Payment';
 
   public function __construct () {
     $this->id									= $this->sof_id;

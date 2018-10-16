@@ -9,7 +9,7 @@ class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
   * constructor
   */
   private $sof_id  	= 'tcash';
-  private $sof_desc = 'TCASH';
+  private $sof_desc = 'TCash';
 
   public function __construct () {
     $this->id									= $this->sof_id;

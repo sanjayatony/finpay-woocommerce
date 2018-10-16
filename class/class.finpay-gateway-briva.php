@@ -9,7 +9,7 @@ class WC_Gateway_Finpay_Briva extends WC_Payment_Gateway {
   * constructor
   */
   private $sof_id  	= 'briva';
-  private $sof_desc = 'Felisa BRI Closed';
+  private $sof_desc = 'BRI Virtual Account - Close Payment';
 
   public function __construct () {
     $this->id									= $this->sof_id;

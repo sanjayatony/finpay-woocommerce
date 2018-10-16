@@ -9,7 +9,7 @@ class WC_Gateway_Finpay_Vastbni extends WC_Payment_Gateway {
   * constructor
   */
   private $sof_id  	= 'vastbni';
-  private $sof_desc = 'Felisa BNI Open';
+  private $sof_desc = 'BNI Virtual Account - Open Payment';
 
   public function __construct () {
     $this->id									= $this->sof_id;
