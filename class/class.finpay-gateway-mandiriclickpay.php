@@ -1,19 +1,19 @@
 <?php
 /**
-* tcash / TCASH
+* mandiriclickpay / Mandiri Clickpay
 */
 
-class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
+class WC_Gateway_Finpay_Mandiriclickpay extends WC_Payment_Gateway {
 
   /**
   * constructor
   */
-  private $sof_id  	= 'tcash';
-  private $sof_desc = 'TCash';
+  private $sof_id  	= 'mandiriclickpay';
+  private $sof_desc = 'Mandiri Clickpay';
 
   public function __construct () {
     $this->id									= $this->sof_id;
-    $this->has_fields					= false;
+    $this->has_fields					= true;
     $this->method_title				= __($this->sof_desc, 'woocommerce');
     $this->method_description = __('Allows payments using '.$this->sof_desc, 'woocommerce');
 
@@ -40,8 +40,6 @@ class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
     add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
     add_action( 'admin_print_scripts-woocommerce_page_wc-settings', array( &$this, 'finpay_admin_scripts' ));
     add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) ); //custom thankyou page
-    add_action( 'woocommerce_api_'. strtolower( get_class($this) ), array( $this, 'callback_handler' ) );
-
   }
 
 
@@ -58,18 +56,46 @@ class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
     $logger->log( 'response generate', wc_print_r($response, true));
 
     if($response->status_code == '00'){
-      //update  order status to on-hold
-      $order->update_status('on-hold', __('Awaiting payment via '. $this->sof_desc, 'woocommerce'));
+      $order->add_order_note( __('Your payment have been received', 'woocommerce') );
+      $order->payment_complete();
+      $order->reduce_order_stock();
 
       return array(
         'result'  => 'success',
-        'redirect'  => $response->redirect_url // to payment page
+        'redirect' => $this->get_return_url( $order )
       );
 
     }else{
       wc_add_notice( __($this->sof_desc.'  error:', 'woocommerce') . $response->status_code, 'error' );
       return;
     }
+  }
+
+  /**
+  * create fields
+  */
+  public function payment_fields(){
+    if ( $this->description ) {
+      if ( $this->enviroment == 'sandbox' ) {
+        $this->description .= ' TEST MODE ENABLED. In test mode, you can use the card numbers listed in <a href="#" target="_blank">documentation</a>.';
+        $this->description  = trim( $this->description );
+      }
+      // display the description with <p> tags etc.
+      echo wpautop( wp_kses_post( $this->description ) );
+    }
+    echo '<fieldset id="wc-' . esc_attr( $this->id ) . '-cc-form" style="background:transparent;">';
+    echo '
+    <div class="form-row form-row-wide">
+      <label>Nomor kartu Debit <span class="required">*</span></label>
+      <input id="finpay_debit_no" name="debit_no" type="text" autocomplete="off" required="required">
+    </div>
+    <div class="form-row form-row-wide">
+      <label>Respon Token <span class="required">*</span></label>
+      <input id="finpay_token_no" name="token_no" type="text" autocomplete="off" required="required">
+    </div>
+    <div class="clear"></div>';
+    echo '<div class="clear"></div></fieldset>';
+
   }
 
   /**
@@ -88,8 +114,8 @@ class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
           $fn_item = array();
 
           $fn_item['name']      = $item['name'];
-          $fn_item['price']     = $order->get_item_subtotal( $item, false );
-          $fn_item['qty']       = $item['qty'];
+          $fn_item['price']     = (string)round($order->get_item_subtotal( $item, false ), 0);
+          $fn_item['qty']       = (string)$item['qty'];
 
           $items_arr[] = array_values($fn_item);
         }
@@ -99,31 +125,33 @@ class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
     $logger->log( 'items', wc_print_r($items, true));
     $items = json_encode($items_arr);
 
-    $add_info1    = $order->billing_last_name;
     $amount       = round($order->get_total(), 0);
     $cust_email   = $order->billing_email;
     $cust_id      = $order->get_user_id();
     $cust_msisdn  = $order->billing_phone;
     $cust_name    = $order->billing_first_name;
-    $failed_url   = $order->get_checkout_payment_url(false);
     $invoice      = $order->get_id();
     $items        = $items;
     $merchant_id  = $this->merchant_id;
-    $return_url   = get_site_url().'/wc-api/'.strtolower( get_class($this)).'/?id='.$invoice;  //callback
     $sof_id       = $this->id;
     $sof_type     = 'pay';
     $success_url   = $this->get_return_url( $order ); //after payment done
     $timeout      = $this->timeout;
     $trans_date   = strtotime($order->order_date);
 
-    //mer_signature
-    $mer_signature =  $add_info1.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$failed_url.'%'.$invoice.'%'.$items.'%'.$merchant_id.'%'.$return_url.'%'.$sof_id.'%'.$sof_type.'%'.$success_url.'%'.$timeout.'%'.$trans_date;
+    $debit = $_POST['debit_no'];
+    $debit_last_10 = substr($debit, -10);
+    $token = $_POST['token_no'];
 
     $logger = wc_get_logger();
+
+    $add_info1    = $debit.'|'.$debit_last_10.'|'.$amount.'|'.$invoice.'|'.$token;
+    $logger->log( 'add info1', $add_info1);
+
+    //mer_signature
+    $mer_signature = $add_info1.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$invoice.'%'.$items.'%'.$merchant_id.'%'.$sof_id.'%'.$sof_type.'%'.$success_url.'%'.$trans_date;
     $mer_signature = strtoupper($mer_signature).'%'.$this->merchant_key;
-    $logger->log( 'MER1', $mer_signature );
-    $mer_signature = strtoupper(hash('sha256', $mer_signature));
-    $logger->log( 'MER2', $mer_signature );
+    $mer_signature = hash('sha256', $mer_signature);
 
     //data
     $finpay_args = array (
@@ -133,16 +161,13 @@ class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
       'cust_id'       => $cust_id,
       'cust_msisdn'   => $cust_msisdn,
       'cust_name'     => $cust_name,
-      'failed_url'    => $failed_url,
       'invoice'       => $invoice,
-      'items'          => $items,
+      'items'         => $items,
       'mer_signature' => $mer_signature,
       'merchant_id'   => $merchant_id,
-      'return_url'    => $return_url,
       'sof_id'        => $sof_id,
       'sof_type'      => $sof_type,
-      'success_url'   => $success_url,
-      'timeout'       => $timeout,
+      'success_url'       => $success_url,
       'trans_date'    => $trans_date
     );
 
@@ -158,34 +183,19 @@ class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
    */
 
   public function thankyou_page ($order_id) {
+    echo '<div style="text-align:center">';
     echo wpautop( wptexturize( $this->instructions ) );
+    echo '</div>';
   }
   /**
   * add instrctions and payment code in email
   */
   function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
     if ( $this->instructions && ! $sent_to_admin && $this->id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
+      echo '<div style="text-align:center">';
       echo wpautop( wptexturize( $this->instructions ) );
+      echo '</div>';
     }
-  }
-
-  public function callback_handler() {
-    $logger = wc_get_logger();
-    $logger->log( 'finrc', wc_print_r($_POST, true));
-    global $woocommerce;
-    $order = new WC_ORDER( $_GET['id'] );
-    if($_POST['result_code'] == '00'){
-      $order->add_order_note( __('Your payment have been received', 'woocommerce') );
-      $order->payment_complete();
-      $order->reduce_order_stock();
-    }else{
-      $order->add_order_note( __('Your payment failed, please contact Finpay.', 'woocommerce') );
-      $order->update_status('failed', __('Your payment failed, please try again.', 'woocommerce'));
-    }
-
-
-
-
   }
 
 
@@ -277,3 +287,7 @@ class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
 		);
   }
 }
+
+
+
+

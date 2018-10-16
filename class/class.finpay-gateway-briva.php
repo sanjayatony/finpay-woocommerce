@@ -9,7 +9,7 @@ class WC_Gateway_Finpay_Briva extends WC_Payment_Gateway {
   * constructor
   */
   private $sof_id  	= 'briva';
-  private $sof_desc = 'Felisa BRI Closed';
+  private $sof_desc = 'BRI Virtual Account - Close Payment';
 
   public function __construct () {
     $this->id									= $this->sof_id;
@@ -34,7 +34,7 @@ class WC_Gateway_Finpay_Briva extends WC_Payment_Gateway {
     }else{
       $this->merchant_id = $this->get_option('merchant_id_production');
       $this->merchant_key	= $this->get_option('merchant_key_production');
-      $this->api_endpoint = 'https://sandbox.finpay.co.id/servicescode/api/apiFinpay.php';
+      $this->api_endpoint = 'https://billhosting.finnet-indonesia.com/prepaidsystem/api/apiFinpay.php';
     }
 
     add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
