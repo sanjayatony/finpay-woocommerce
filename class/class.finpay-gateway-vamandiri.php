@@ -97,7 +97,7 @@ class WC_Gateway_Finpay_Vamandiri extends WC_Payment_Gateway {
     $sof_id       = $this->id;
     $sof_type     = 'pay';
     $timeout      = $this->timeout;
-    $trans_date   = strtotime($order->order_date);
+    $trans_date   = date('Ymdhis',strtotime($order->order_date));
 
     //mer_signature
     $mer_signature = $add_info1.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$invoice.'%'.$merchant_id.'%'.$return_url.'%'.$sof_id.'%'.$sof_type.'%'.$timeout.'%'.$trans_date;

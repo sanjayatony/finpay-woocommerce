@@ -114,7 +114,7 @@ class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
     $sof_type     = 'pay';
     $success_url   = $this->get_return_url( $order ); //after payment done
     $timeout      = $this->timeout;
-    $trans_date   = strtotime($order->order_date);
+    $trans_date   = date('Ymdhis',strtotime($order->order_date));
 
     //mer_signature
     $mer_signature =  $add_info1.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$failed_url.'%'.$invoice.'%'.$items.'%'.$merchant_id.'%'.$return_url.'%'.$sof_id.'%'.$sof_type.'%'.$success_url.'%'.$timeout.'%'.$trans_date;

@@ -137,7 +137,7 @@ class WC_Gateway_Finpay_Mandiriclickpay extends WC_Payment_Gateway {
     $sof_type     = 'pay';
     $success_url   = $this->get_return_url( $order ); //after payment done
     $timeout      = $this->timeout;
-    $trans_date   = strtotime($order->order_date);
+    $trans_date   = date('Ymdhis',strtotime($order->order_date));
 
     $debit = $_POST['debit_no'];
     $debit_last_10 = substr($debit, -10);
