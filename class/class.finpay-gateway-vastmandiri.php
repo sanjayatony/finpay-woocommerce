@@ -16,6 +16,7 @@ class WC_Gateway_Finpay_Vastmandiri extends WC_Payment_Gateway {
     $this->has_fields					= false;
     $this->method_title				= __($this->sof_desc, 'woocommerce');
     $this->method_description = __('Allows payments using '.$this->sof_desc, 'woocommerce');
+    $this->icon = plugins_url( 'img/mandiri.png', dirname(__FILE__) ) ;
 
     //load the settings
     $this->init_form_fields();
