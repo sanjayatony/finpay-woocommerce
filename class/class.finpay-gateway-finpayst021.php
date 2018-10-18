@@ -129,7 +129,7 @@ class WC_Gateway_Finpay_Finpayst021 extends WC_Payment_Gateway {
     }
 
     //mer_signature
-    $mer_signature = $add_info1.'%'.add_info5.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$invoice.'%'.$merchant_id.'%'.$return_url.'%'.$sof_id.'%'.$sof_type.'%'.$timeout.'%'.$trans_date;
+    $mer_signature = $add_info1.'%'.$add_info5.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$invoice.'%'.$merchant_id.'%'.$return_url.'%'.$sof_id.'%'.$sof_type.'%'.$timeout.'%'.$trans_date;
     $mer_signature = strtoupper($mer_signature).'%'.$this->merchant_key;
     $mer_signature = hash('sha256', $mer_signature);
 

@@ -28,7 +28,7 @@ class WC_Gateway_Finpay_Briva extends WC_Payment_Gateway {
     $this->instructions = $this->get_option('instructions');
     $this->timeout = $this->get_option('timeout');
     $this->environment = $this->get_option('environment');
-     $this->merchant_code = $this->get_option('merchant_code');
+    $this->merchant_code = $this->get_option('merchant_code');
     if($this->environment == 'sandbox'){
       $this->merchant_id = $this->get_option('merchant_id_sandbox');
       $this->merchant_key	= $this->get_option('merchant_key_sandbox');
