@@ -28,6 +28,7 @@ class WC_Gateway_Finpay_Mandiriclickpay extends WC_Payment_Gateway {
     $this->instructions = $this->get_option('instructions');
     $this->timeout = $this->get_option('timeout');
     $this->environment = $this->get_option('environment');
+    $this->merchant_code = $this->get_option('merchant_code');
     if($this->environment == 'sandbox'){
       $this->merchant_id = $this->get_option('merchant_id_sandbox');
       $this->merchant_key	= $this->get_option('merchant_key_sandbox');
@@ -128,9 +129,9 @@ class WC_Gateway_Finpay_Mandiriclickpay extends WC_Payment_Gateway {
 
     $amount       = round($order->get_total(), 0);
     $cust_email   = $order->billing_email;
-    $cust_id      = $order->get_user_id();
+    $cust_id      = $order->billing_phone;
     $cust_msisdn  = $order->billing_phone;
-    $cust_name    = $order->billing_first_name;
+    $cust_name    = $order->billing_first_name.' '.$order->billing_last_name; //fname+lname
     $invoice      = $order->get_id();
     $items        = $items;
     $merchant_id  = $this->merchant_id;
@@ -147,16 +148,44 @@ class WC_Gateway_Finpay_Mandiriclickpay extends WC_Payment_Gateway {
     $logger = wc_get_logger();
 
     $add_info1    = $debit.'|'.$debit_last_10.'|'.$amount.'|'.$invoice.'|'.$token;
+    $add_info5    = $order->billing_phone;
     $logger->log( 'add info1', $add_info1);
 
+    $exceedlen = false;
+    $field_var = '';
+    if(strlen($add_info1) > 150){
+      $field_var .= 'add_info1';
+      $exceedlen = true;
+    }elseif(strlen($add_info5) > 150){
+      $field_var .= 'add_info5';
+      $exceedlen = true;
+    }elseif(strlen($amount) > 12){
+      $field_var .= 'amount';
+      $exceedlen = true;
+    }elseif(strlen($cust_email) > 50){
+      $field_var .= 'cust_email';
+      $exceedlen = true;
+    }elseif(strlen($cust_msisdn) > 32){
+      $field_var .= 'cust_msisdn';
+      $exceedlen = true;
+    }elseif(strlen($cust_name) > 50){
+      $field_var .= 'cust_name';
+      $exceedlen = true;
+    }
+    if($exceedlen){
+      wc_add_notice( __('This field(s) have exceed the limit : ', 'woocommerce') . $field_var, 'error' );
+      return;
+    }
+
     //mer_signature
-    $mer_signature = $add_info1.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$invoice.'%'.$items.'%'.$merchant_id.'%'.$sof_id.'%'.$sof_type.'%'.$success_url.'%'.$trans_date;
+    $mer_signature = $add_info1.'%'.$add_info5.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$invoice.'%'.$items.'%'.$merchant_id.'%'.$sof_id.'%'.$sof_type.'%'.$success_url.'%'.$trans_date;
     $mer_signature = strtoupper($mer_signature).'%'.$this->merchant_key;
     $mer_signature = hash('sha256', $mer_signature);
 
     //data
     $finpay_args = array (
       'add_info1'     => $add_info1,
+      'add_info5'     => $add_info5,
       'amount'        => $amount,
       'cust_email'    => $cust_email,
       'cust_id'       => $cust_id,
@@ -246,6 +275,12 @@ class WC_Gateway_Finpay_Mandiriclickpay extends WC_Payment_Gateway {
 		    'default' => __(100000),
 		    'desc_tip'    => true
 		  ),
+      'merchant_code' => array(
+        'title'   => __('Merchant Code', 'woocommerce'),
+        'type'    => 'text',
+        'description' => __('Enter your Merchant Code.', 'woocommerce'),
+        'default' => '',
+      ),
 		  'environment' => array(
 		    'title' => __( 'Environment', 'woocommerce' ),
 		    'type' => 'select',
