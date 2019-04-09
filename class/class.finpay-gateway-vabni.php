@@ -94,7 +94,7 @@ class WC_Gateway_Finpay_Vabni extends WC_Payment_Gateway {
     $cust_id      = $order->billing_phone;
     $cust_msisdn  = $order->billing_phone;
     $cust_name    = $order->billing_first_name.' '.$order->billing_last_name; //fname+lname
-    $invoice      = $order->get_id();
+    $invoice      = $order->get_order_number();
     $merchant_id  = $this->merchant_id;
     $return_url   = get_site_url().'/wc-api/'.strtolower( get_class($this)).'/?id='.$invoice;
     $sof_id       = $this->id;

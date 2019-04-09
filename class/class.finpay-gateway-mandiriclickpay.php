@@ -132,7 +132,7 @@ class WC_Gateway_Finpay_Mandiriclickpay extends WC_Payment_Gateway {
     $cust_id      = $order->billing_phone;
     $cust_msisdn  = $order->billing_phone;
     $cust_name    = $order->billing_first_name.' '.$order->billing_last_name; //fname+lname
-    $invoice      = $order->get_id();
+    $invoice      = $order->get_order_number();
     $items        = $items;
     $merchant_id  = $this->merchant_id;
     $sof_id       = $this->id;

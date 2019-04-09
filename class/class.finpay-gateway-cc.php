@@ -90,7 +90,7 @@ class WC_Gateway_Finpay_Cc extends WC_Payment_Gateway {
     $cust_msisdn  = $order->billing_phone;
     $cust_name    = $order->billing_first_name.' '.$order->billing_last_name; //fname+lname
     $failed_url   = $order->get_checkout_payment_url(false);
-    $invoice      = $order->get_id();
+    $invoice      = $order->get_order_number(); // need plugin
     $merchant_id  = $this->merchant_id;
     $return_url   = get_site_url().'/wc-api/'.strtolower( get_class($this)).'/?id='.$invoice;  //callback
     $sof_id       = $this->id;
