@@ -128,6 +128,11 @@ class WC_Gateway_Finpay_Vastbni extends WC_Payment_Gateway {
       return;
     }
 
+    if (!preg_match('/^[0-9]+$/', $cust_msisdn)) {
+      wc_add_notice( __('Phone number only accept number value. ', 'woocommerce'), 'error' );
+      return;
+    }
+
     //mer_signature
     $mer_signature = $add_info1.'%'.$add_info5.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$invoice.'%'.$merchant_id.'%'.$return_url.'%'.$sof_id.'%'.$sof_type.'%'.$timeout.'%'.$trans_date;
     $mer_signature = strtoupper($mer_signature).'%'.$this->merchant_key;

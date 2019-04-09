@@ -69,6 +69,7 @@ class WC_Gateway_Finpay_Cc extends WC_Payment_Gateway {
       );
 
     }else{
+
       wc_add_notice( __($this->sof_desc.'  error:', 'woocommerce') . $response->status_code, 'error' );
       return;
     }
@@ -123,6 +124,13 @@ class WC_Gateway_Finpay_Cc extends WC_Payment_Gateway {
       wc_add_notice( __('This field(s) have exceed the limit : ', 'woocommerce') . $field_var, 'error' );
       return;
     }
+
+    if (!preg_match('/^[0-9]+$/', $cust_msisdn)) {
+      wc_add_notice( __('Phone number only accept number value. ', 'woocommerce'), 'error' );
+      return;
+    }
+
+
 
     //mer_signature
     $mer_signature =  $add_info1.'%'.$add_info5.'%'.$amount.'%'.$cust_email.'%'.$cust_id.'%'.$cust_msisdn.'%'.$cust_name.'%'.$failed_url.'%'.$invoice.'%'.$merchant_id.'%'.$return_url.'%'.$sof_id.'%'.$sof_type.'%'.$success_url.'%'.$timeout.'%'.$trans_date;
