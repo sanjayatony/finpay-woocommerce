@@ -61,7 +61,7 @@ class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
 
 		if ( '00' === $response->status_code ) {
 			// update  order status to on-hold
-			$order->update_status( 'on-hold', __( 'Awaiting payment via ' . $this->sof_desc, 'woocommerce' ) );
+			$order->update_status( 'on-hold', 'Awaiting payment via ' . $this->sof_desc );
 
 			return array(
 				'result'   => 'success',
@@ -193,14 +193,14 @@ class WC_Gateway_Finpay_Tcash extends WC_Payment_Gateway {
 	 */
 
 	public function thankyou_page( $order_id ) {
-		echo esc_html(wpautop( wptexturize( $this->instructions ) ));
+		echo esc_html( wpautop( wptexturize( $this->instructions ) ) );
 	}
 	/**
 	 * add instrctions and payment code in email
 	 */
 	public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
 		if ( $this->instructions && ! $sent_to_admin && $this->id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
-			echo esc_html(wpautop( wptexturize( $this->instructions ) ));
+			echo esc_html( wpautop( wptexturize( $this->instructions ) ) );
 		}
 	}
 

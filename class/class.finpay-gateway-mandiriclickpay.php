@@ -83,7 +83,7 @@ class WC_Gateway_Finpay_Mandiriclickpay extends WC_Payment_Gateway {
 				$this->description  = trim( $this->description );
 			}
 			// display the description with <p> tags etc.
-			echo esc_html(wpautop( wp_kses_post( $this->description ) ));
+			echo esc_html( wpautop( wp_kses_post( $this->description ) ) );
 		}
 		echo '<fieldset id="wc-' . esc_attr( $this->id ) . '-cc-form" style="background:transparent;">';
 		echo '
@@ -218,7 +218,7 @@ class WC_Gateway_Finpay_Mandiriclickpay extends WC_Payment_Gateway {
 
 	public function thankyou_page( $order_id ) {
 		echo '<div style="text-align:center">';
-		echo esc_html(wpautop( wptexturize( $this->instructions ) ));
+		echo esc_html( wpautop( wptexturize( $this->instructions ) ) );
 		echo '</div>';
 	}
 	/**
@@ -227,7 +227,7 @@ class WC_Gateway_Finpay_Mandiriclickpay extends WC_Payment_Gateway {
 	public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
 		if ( $this->instructions && ! $sent_to_admin && $this->id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
 			echo '<div style="text-align:center">';
-			echo esc_html(wpautop( wptexturize( $this->instructions ) ));
+			echo esc_html( wpautop( wptexturize( $this->instructions ) ) );
 			echo '</div>';
 		}
 	}

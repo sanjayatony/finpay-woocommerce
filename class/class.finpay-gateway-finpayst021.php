@@ -213,7 +213,7 @@ class WC_Gateway_Finpay_Finpayst021 extends WC_Payment_Gateway {
 			'enabled'                 => array(
 				'title'   => __( 'Enabled/Disable', 'woocommerce' ),
 				'type'    => 'checkbox',
-				'label'   => 'Enable Finpay Code 021 - Open Payment' ,
+				'label'   => 'Enable Finpay Code 021 - Open Payment',
 				'default' => 'no',
 			),
 			'title'                   => array(
