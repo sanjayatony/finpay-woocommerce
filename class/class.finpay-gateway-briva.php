@@ -170,7 +170,7 @@ class WC_Gateway_Finpay_Briva extends WC_Payment_Gateway {
 
 	public function thankyou_page( $order_id ) {
 		global $wpdb;
-		$payment_code = $wpdb->get_row( 'SELECT * FROM ' . $wpdb->prefix . 'posts WHERE ID = ' . $order_id );
+		$payment_code = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM $wpdb->posts WHERE ID = %s', $order_id ) );
 		echo '<div style="text-align:center">';
 		echo esc_html( wpautop( wptexturize( $this->instructions ) ) );
 		echo '<h4>' . esc_html( $payment_code->post_excerpt ) . '</h4>';
