@@ -2,7 +2,7 @@
 /*
 Plugin Name: Finpay - WooCommerce Payment Gateway Plugin
 Version: 1.0.0
-Author: Tony S
+Author: Tony S <tony@sanjaya.info>
 
 this plugin written based on https://docs.woocommerce.com/document/payment-gateway-api/
 
