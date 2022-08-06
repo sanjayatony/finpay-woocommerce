@@ -66,8 +66,8 @@ class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {
 			// update order note with payment code
 			$order->add_order_note( 'Your ' . $this->sof_desc . ' payment code is <b>' . $response->payment_code . '</b>' );
 
-			// use post excerpt to save payment code. GENIUS!!
-			$rs = $wpdb->update( $wpdb->prefix . 'posts', array( 'post_excerpt' => $response->payment_code ), array( 'ID' => $order_id ) );
+			// Save payment code to post meta.
+			add_post_meta( $order_id, '_payment_code', $response->payment_code, true );
 
 			return array(
 				'result'   => 'success',
@@ -170,10 +170,9 @@ class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {
 
 	public function thankyou_page( $order_id ) {
 		global $wpdb;
-		$payment_code = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM $wpdb->posts WHERE ID = %s', $order_id ) );
 		echo '<div style="text-align:center">';
-		echo esc_html(wpautop( wptexturize( $this->instructions ) ));
-		echo '<h4>' . esc_html($payment_code->post_excerpt) . '</h4>';
+		echo esc_html( wpautop( wptexturize( $this->instructions ) ) );
+		echo '<h4>' . esc_html( get_post_meta( $order_id, '_payment_code', true ) ) . '</h4>';
 		echo '</div>';
 	}
 	/**
@@ -183,7 +182,7 @@ class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {
 		if ( $this->instructions && ! $sent_to_admin && $this->id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
 			echo '<div style="text-align:center">';
 			echo esc_html(wpautop( wptexturize( $this->instructions ) ));
-			echo '<h4>' . esc_html($payment_code->post_excerpt) . '</h4>';
+			echo '<h4>' . esc_html( get_post_meta( $order_id, '_payment_code', true ) ) . '</h4>';
 			echo '</div>';
 		}
 	}
