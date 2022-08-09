@@ -1,6 +1,6 @@
 <?php
 /**
- * vabnc / VA BNC
+ * Sof vabnc / VA BNC
  */
 
 class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {

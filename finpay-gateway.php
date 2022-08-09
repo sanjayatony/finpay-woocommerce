@@ -1,13 +1,10 @@
 <?php
-/*
-Plugin Name: Finpay - WooCommerce Payment Gateway Plugin
-Version: 1.0.1
-Author: Tony S <tony@sanjaya.info>
-
-this plugin written based on https://docs.woocommerce.com/document/payment-gateway-api/
-
+/**
+ * Plugin Name: Finpay - WooCommerce Payment Gateway Plugin
+ * Version: 1.0.1
+ * Author: Tony S <tony@sanjaya.info>
+ * This plugin written based on https://docs.woocommerce.com/document/payment-gateway-api/
 */
-
 
 add_action( 'plugins_loaded', 'finpay_gateway_init' );
 function finpay_gateway_init() {
@@ -28,6 +25,7 @@ function finpay_gateway_init() {
 	include 'class/class.finpay-gateway-vastpermata.php';
 	include 'class/class.finpay-gateway-vamandiri.php';
 	include 'class/class.finpay-gateway-vastmandiri.php';
+	include 'class/class-wc-gateway-finpay-vabnc.php';
 }
 
 /**
@@ -52,6 +50,8 @@ function add_finpay_payment_gateway( $methods ) {
 	$methods[] = 'WC_Gateway_Finpay_Vastpermata';
 	$methods[] = 'WC_Gateway_Finpay_Vamandiri';
 	$methods[] = 'WC_Gateway_Finpay_Vastmandiri';
+
+	$methods[] = 'WC_Gateway_Finpay_Vabnc';
 
 	return $methods;
 }
