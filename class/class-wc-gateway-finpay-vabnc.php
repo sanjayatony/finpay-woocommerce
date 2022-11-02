@@ -85,23 +85,42 @@ class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {
 	 */
 	public function generate_request( $order_id ) {
 		global $woocommerce;
-		$order = new WC_Order( $order_id );
+		$logger	= wc_get_logger();
+		$order 	= new WC_Order( $order_id );
+
+		$items = array();
+
+		foreach ( $order->get_items() as $item_id => $item ) {
+   		$product_id = $item->get_product_id();
+			$product_name = $item->get_name();
+			$quantity = $item->get_quantity();
+			$item_subtotal = $item->get_subtotal();
+  	}
+
+		array_push( $items, array(
+		  $product_id,
+			$product_name,
+			$quantity,
+			$item->get_subtotal()
+    ) );
+
+		$logger->log( 'ITEMS', wc_print_r( $items, true ) );
 
 		$data = array (
-			"add_info1"   => $this->merchant_name . '-' . $order->billing_first_name,
-			"add_info5"   => $order->billing_phone,
-			"amount"      => round( $order->get_total(), 0 ),
+			"amount"      => round( $order->get_total(), 0 ),			
 			"cust_email"  => $order->billing_email,
 			"cust_id"     => $order->billing_phone,
 			"cust_msisdn" => $order->billing_phone,
 			"cust_name"   => $order->billing_first_name . ' ' . $order->billing_last_name,
 			"invoice"     => $order->get_order_number(),
 			"merchant_id" => $this->merchant_id,
-			"return_url"  => get_site_url() . '/wc-api/' . strtolower( get_class( $this ) ) . '/?id=' . $invoice,
-			"sof_id"      => $this->id,
-			"sof_type"    => 'pay',
+			"items"				=> array(array("Kura-kura Terbang",100000,1)),
+			"return_url"  => get_site_url() . '/wc-api/' . strtolower( get_class( $this ) ) . '/?id=' . $order_id,
 			"timeout"     => $this->timeout,
-			"trans_date"  => gmdate( 'Ymdhis', strtotime( $order->order_date ) )
+			"trans_date"  => gmdate( 'Ymdhis', strtotime( $order->order_date ) ),
+			"add_info1"   => $this->merchant_name . '-' . $order->billing_first_name,
+			"sof_id"      => $this->id,
+			"sof_type"    => 'pay'
 		);
 
 		$exceedlen = false;
@@ -130,7 +149,7 @@ class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {
 			return;
 		}
 
-		if ( ! preg_match( '/^[0-9]+$/', $cust_msisdn ) ) {
+		if ( ! preg_match( '/^[0-9]+$/', $data['cust_msisdn'] ) ) {
 			wc_add_notice( __( 'Phone number only accept number value. ', 'woocommerce' ), 'error' );
 			return;
 		}
@@ -138,7 +157,7 @@ class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {
 		$signature   = $this->generate_signature( $data, $this->merchant_key );
 		$finpay_args = array_merge( $data, array( 'mer_signature' => $signature ) );
 
-		$logger      = wc_get_logger();
+		
 		$logger->log( 'DATA send', wc_print_r( $finpay_args, true ) );
 
 		$response = wp_remote_retrieve_body( wp_remote_post( $this->api_endpoint, array( 'body' => $finpay_args ) ) );
@@ -147,10 +166,19 @@ class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {
 	}
 
 	
-	public function geneerate_signature( $array, $merchant_key ){
-		ksort($array);
-		$signature = hash( 'sha256', strtoupper( implode('%', $array) ) . '%' . $merchant_key );
-		return $signature;
+	public function generate_signature( $data_array, $merchant_key ){
+		$logger	= wc_get_logger();
+		ksort($data_array, 0);
+
+		if(is_array($data_array['items'])){
+			$data_array['items'] = json_encode($data_array['items']);
+		}
+
+		$data = strtoupper( implode('%', $data_array) ) . '%' . $merchant_key;
+		$logger->log( 'DATA IMPLODE', $data );
+
+		$signature = hash( 'sha256', $data );
+		return strtoupper( $signature );
 	}
 
 
