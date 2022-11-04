@@ -98,7 +98,6 @@ class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {
   	}
 
 		array_push( $items, array(
-		  $product_id,
 			$product_name,
 			$quantity,
 			$item->get_subtotal()
@@ -107,6 +106,8 @@ class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {
 		$logger->log( 'ITEMS', wc_print_r( $items, true ) );
 
 		$data = array (
+			"add_info1"   => $this->merchant_name,
+			"add_info5"   => $order->billing_phone,
 			"amount"      => round( $order->get_total(), 0 ),			
 			"cust_email"  => $order->billing_email,
 			"cust_id"     => $order->billing_phone,
@@ -114,13 +115,14 @@ class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {
 			"cust_name"   => $order->billing_first_name . ' ' . $order->billing_last_name,
 			"invoice"     => $order->get_order_number(),
 			"merchant_id" => $this->merchant_id,
-			"items"				=> array(array("Kura-kura Terbang",100000,1)),
+			//"items"				=> array(array("Kura-kura Terbang",100000,1)),
+			"items"				=> $items,
 			"return_url"  => get_site_url() . '/wc-api/' . strtolower( get_class( $this ) ) . '/?id=' . $order_id,
+			"sof_id"      => $this->id,
+			"sof_type"    => 'pay',
 			"timeout"     => $this->timeout,
 			"trans_date"  => gmdate( 'Ymdhis', strtotime( $order->order_date ) ),
-			"add_info1"   => $this->merchant_name . '-' . $order->billing_first_name,
-			"sof_id"      => $this->id,
-			"sof_type"    => 'pay'
+			
 		);
 
 		$exceedlen = false;
@@ -157,11 +159,19 @@ class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {
 		$signature   = $this->generate_signature( $data, $this->merchant_key );
 		$finpay_args = array_merge( $data, array( 'mer_signature' => $signature ) );
 
-		
 		$logger->log( 'DATA send', wc_print_r( $finpay_args, true ) );
+		
+		$args = array (
+			'headers' => array(
+					'Content-Type' => 'application/json'
+			),
+			'body' => json_encode( $finpay_args )
+		);
 
-		$response = wp_remote_retrieve_body( wp_remote_post( $this->api_endpoint, array( 'body' => $finpay_args ) ) );
+		$response = wp_remote_retrieve_body( wp_remote_post( $this->api_endpoint, $args ) );
+
 		$logger->log( 'Response', $response );
+		$logger->log( 'Endpoint', $this->api_endpoint );
 		return json_decode( $response );
 	}
 
@@ -175,7 +185,7 @@ class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {
 		}
 
 		$data = strtoupper( implode('%', $data_array) ) . '%' . $merchant_key;
-		$logger->log( 'DATA IMPLODE', $data );
+		$logger->log( 'DATA IMPLODE ', $data );
 
 		$signature = hash( 'sha256', $data );
 		return strtoupper( $signature );
@@ -187,20 +197,27 @@ class WC_Gateway_Finpay_Vabnc extends WC_Payment_Gateway {
 	 */
 	public function thankyou_page( $order_id ) {
 		global $wpdb;
-		echo '<div style="text-align:center">';
-		echo esc_html( wpautop( wptexturize( $this->instructions ) ) );
-		echo '<h4>' . esc_html( get_post_meta( $order_id, '_payment_code', true ) ) . '</h4>';
-		echo '</div>';
+		?>
+		<div style="text-align:center">
+			<?php echo esc_html( wptexturize( $this->instructions ) );?>
+			<h4><?php echo esc_html( get_post_meta( $order_id, '_payment_code', true ) );?></h4>
+		</div>
+		<?php
 	}
+
 	/**
 	 * add instrctions and payment code in email
 	 */
 	public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
+		global $wpdb;
+
 		if ( $this->instructions && ! $sent_to_admin && $this->id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
-			echo '<div style="text-align:center">';
-			echo esc_html(wpautop( wptexturize( $this->instructions ) ));
-			echo '<h4>' . esc_html( get_post_meta( $order_id, '_payment_code', true ) ) . '</h4>';
-			echo '</div>';
+			?>
+			<div style="text-align:center">
+				<?php echo esc_html( wptexturize( $this->instructions ) );?>
+				<h4><?php echo esc_html( get_post_meta( $order_id, '_payment_code', true ) );?></h4>
+			</div>			
+			<?php
 		}
 	}
 
