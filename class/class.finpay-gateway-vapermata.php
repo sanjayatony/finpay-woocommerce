@@ -172,7 +172,7 @@ class WC_Gateway_Finpay_Vapermata extends WC_Payment_Gateway {
 		global $wpdb;
 		$payment_code = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM $wpdb->posts WHERE ID = %s', $order_id ) );
 		echo '<div style="text-align:center">';
-		echo esc_html( wpautop( wptexturize( $this->instructions ) ) );
+		echo esc_html( wptexturize( $this->instructions ) );
 		echo '<h4>' . esc_html( $payment_code->post_excerpt ) . '</h4>';
 		echo '</div>';
 	}
@@ -182,7 +182,7 @@ class WC_Gateway_Finpay_Vapermata extends WC_Payment_Gateway {
 	public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
 		if ( $this->instructions && ! $sent_to_admin && $this->id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
 			echo '<div style="text-align:center">';
-			echo esc_html( wpautop( wptexturize( $this->instructions ) ) );
+			echo esc_html( wptexturize( $this->instructions ) );
 			echo '<h4>' . esc_html( $payment_code->post_excerpt ) . '</h4>';
 			echo '</div>';
 		}
